@@ -1,0 +1,66 @@
+version: '3.8'
+services:
+  #######################################
+  #              CONSUL-SD              #
+  #######################################
+
+  consul_sd:
+    image: hashicorp/consul:latest
+    hostname: consul-sd # check hostname into registrator -> docker-entrypoint.sh
+    ports:
+      - '0.0.0.0:8500:8500'
+      - '0.0.0.0:8300:8300'
+### host mode
+#      - target: 8500
+#        published: 8500
+#        protocol: tcp
+#        mode: host
+###
+    command: agent -server -config-file=/consul/config/consul-sd-config.json
+    networks:
+      - consul_network
+    configs:
+      - source: consul-sd-config
+        target: /consul/config/consul-sd-config.json
+    deploy:
+      mode: replicated
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.labels.consul_sd == true'
+
+  #######################################
+  #          CONSUL-REGISTRATOR         #
+  #######################################
+  #   based on gliderlabs/registrator   #
+  ###                                 ###
+
+  consul-registrator:
+    image: registrator
+    networks:
+      - consul_network
+    deploy:
+      mode: global
+    volumes:
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+      - '/etc/hostname:/etc/hostname:ro' # necessary to collect a valid hostname
+      - '/etc/hosts:/etc/hosts:ro'
+
+  #######################################
+  #              NETWORKS               #
+  #######################################
+
+networks:
+  consul_network:
+    driver: overlay
+    attachable: true
+#    external: true
+
+  #######################################
+  #               CONFIGS               #
+  #######################################
+
+configs:
+  consul-sd-config:
+    name: consul-sd-config
+    file: ./configs/consul-sd/consul-sd-config.json

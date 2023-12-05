@@ -1,0 +1,15 @@
+{
+    "datacenter": "localhost",
+    "node_name": "consul-sd",
+    "server": true,
+    "data_dir": "/consul/data",
+    "log_level": "DEBUG",
+    "leave_on_terminate": false,
+    "bootstrap_expect": 1,
+    "bind_addr": "0.0.0.0",
+    "client_addr": "0.0.0.0",
+    "advertise_addr": "127.0.0.1", // "X.X.X.X" - DEFAULT IPv4 ADDR
+    "ui_config": {
+      "enabled": true
+    }
+}
